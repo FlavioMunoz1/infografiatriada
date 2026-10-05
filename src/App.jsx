@@ -56,12 +56,87 @@ const COMPLEMENTARY_TRAITS = [
   }
 ]
 
+// Preguntas del minijuego
+const QUIZ_QUESTIONS = [
+  {
+    id: 1,
+    title: 'Ticket #104: Fuga de nómina',
+    context: 'Un empleado con acceso general descarga un archivo Excel con los sueldos de toda la compañía y lo comparte en un grupo de mensajería.',
+    correctPillar: 'C',
+    explanation: 'Se violó la Confidencialidad: información privada expuesta a personas sin autorización.'
+  },
+  {
+    id: 2,
+    title: 'Ticket #219: Modificación de calificaciones',
+    context: 'Un atacante aprovecha una falla web en el portal de alumnos y cambia las notas finales de un curso en la base de datos.',
+    correctPillar: 'I',
+    explanation: 'Se violó la Integridad: los registros legítimos fueron alterados de forma no autorizada.'
+  },
+  {
+    id: 3,
+    title: 'Ticket #308: Corte de fibra óptica',
+    context: 'Una retroexcavadora corta el cable de red principal del datacenter y deja sin sistema a las sucursales durante 4 horas.',
+    correctPillar: 'A',
+    explanation: 'Se violó la Disponibilidad: los datos están intactos y a salvo, pero los usuarios no pueden acceder al servicio.'
+  },
+  {
+    id: 4,
+    title: 'Ticket #412: Inyección de datos falsos',
+    context: 'Un sensor IoT comprometido envía lecturas térmicas falsas a la sala de servidores para engañar al sistema de enfriamiento.',
+    correctPillar: 'I',
+    explanation: 'Se violó la Integridad: los datos manipulados provocan que el sistema tome decisiones erróneas.'
+  },
+  {
+    id: 5,
+    title: 'Ticket #501: Ataque SYN Flood',
+    context: 'El servidor web recibe millones de conexiones incompletas por segundo, agotando su memoria y tirando el sitio abajo.',
+    correctPillar: 'A',
+    explanation: 'Se violó la Disponibilidad: el servicio colapsa ante la saturación de recursos.'
+  }
+]
+
 export default function App() {
   const [selectedKey, setSelectedKey] = useState('C')
   const [activeScenarioId, setActiveScenarioId] = useState(SCENARIOS[0].id)
 
+  // Estados del minijuego
+  const [quizIndex, setQuizIndex] = useState(0)
+  const [score, setScore] = useState(0)
+  const [userAnswer, setUserAnswer] = useState(null)
+  const [isAnswered, setIsAnswered] = useState(false)
+  const [quizCompleted, setQuizCompleted] = useState(false)
+
   const activePillar = TRIAD_DATA[selectedKey]
   const currentScenario = SCENARIOS.find((item) => item.id === activeScenarioId)
+  const currentQuestion = QUIZ_QUESTIONS[quizIndex]
+
+  const handleQuizAnswer = (pillarCode) => {
+    if (isAnswered) return
+    setUserAnswer(pillarCode)
+    setIsAnswered(true)
+
+    if (pillarCode === currentQuestion.correctPillar) {
+      setScore((prev) => prev + 1)
+    }
+  }
+
+  const handleNextQuestion = () => {
+    if (quizIndex + 1 < QUIZ_QUESTIONS.length) {
+      setQuizIndex((prev) => prev + 1)
+      setUserAnswer(null)
+      setIsAnswered(false)
+    } else {
+      setQuizCompleted(true)
+    }
+  }
+
+  const handleRestartQuiz = () => {
+    setQuizIndex(0)
+    setScore(0)
+    setUserAnswer(null)
+    setIsAnswered(false)
+    setQuizCompleted(false)
+  }
 
   return (
     <main
@@ -180,7 +255,218 @@ export default function App() {
       {/* Detalle del pilar activo */}
       <TriadDetailCard pillar={activePillar} />
 
-      {/* SECCIÓN NUEVA: Simulador de Casos Prácticos */}
+      {/* MINIJUEGO: Desafío de Clasificación SOC */}
+      <section
+        style={{
+          backgroundColor: '#0f172a',
+          border: '1px solid #1e293b',
+          borderRadius: '16px',
+          padding: '24px',
+          marginBottom: '24px',
+          boxShadow: '0 8px 24px -10px rgba(0, 0, 0, 0.4)'
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span style={{ fontSize: '1.3rem' }}>🎮</span>
+            <div>
+              <h2 style={{ margin: 0, fontSize: '1.15rem', fontWeight: '700', color: '#f8fafc' }}>
+                Minijuego: Desafío del Analista SOC
+              </h2>
+              <p style={{ margin: '2px 0 0 0', fontSize: '0.84rem', color: '#94a3b8' }}>
+                Evalúa el incidente y selecciona qué principio de la tríada fue vulnerado.
+              </p>
+            </div>
+          </div>
+
+          <div
+            style={{
+              padding: '6px 14px',
+              borderRadius: '9999px',
+              backgroundColor: '#131e32',
+              border: '1px solid #38bdf840',
+              color: '#38bdf8',
+              fontWeight: '700',
+              fontSize: '0.85rem'
+            }}
+          >
+            Puntaje: {score} / {QUIZ_QUESTIONS.length}
+          </div>
+        </div>
+
+        {!quizCompleted ? (
+          <div
+            style={{
+              backgroundColor: '#131e32',
+              border: '1px solid #22324e',
+              borderRadius: '14px',
+              padding: '20px'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+              <span style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: '600', textTransform: 'uppercase' }}>
+                Caso {quizIndex + 1} de {QUIZ_QUESTIONS.length}
+              </span>
+              <span style={{ fontSize: '0.8rem', color: '#38bdf8', fontWeight: '700' }}>
+                {currentQuestion.title}
+              </span>
+            </div>
+
+            <p style={{ margin: '0 0 20px 0', fontSize: '0.98rem', color: '#f1f5f9', lineHeight: '1.55' }}>
+              {currentQuestion.context}
+            </p>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '10px', marginBottom: '18px' }}>
+              {[
+                { code: 'C', name: 'Confidencialidad', color: '#38bdf8' },
+                { code: 'I', name: 'Integridad', color: '#34d399' },
+                { code: 'A', name: 'Disponibilidad', color: '#fbbf24' }
+              ].map((opt) => {
+                const isChosen = userAnswer === opt.code
+                const isCorrect = opt.code === currentQuestion.correctPillar
+
+                let btnBg = '#0f172a'
+                let btnBorder = '#334155'
+                let btnColor = '#cbd5e1'
+
+                if (isAnswered) {
+                  if (isCorrect) {
+                    btnBg = 'rgba(52, 211, 153, 0.2)'
+                    btnBorder = '#34d399'
+                    btnColor = '#34d399'
+                  } else if (isChosen) {
+                    btnBg = 'rgba(239, 68, 68, 0.2)'
+                    btnBorder = '#ef4444'
+                    btnColor = '#ef4444'
+                  }
+                }
+
+                return (
+                  <button
+                    key={opt.code}
+                    type="button"
+                    disabled={isAnswered}
+                    onClick={() => handleQuizAnswer(opt.code)}
+                    style={{
+                      padding: '12px 14px',
+                      borderRadius: '10px',
+                      border: `1.5px solid ${btnBorder}`,
+                      backgroundColor: btnBg,
+                      color: btnColor,
+                      fontWeight: '700',
+                      fontSize: '0.9rem',
+                      cursor: isAnswered ? 'default' : 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    <span
+                      style={{
+                        width: '24px',
+                        height: '24px',
+                        borderRadius: '6px',
+                        backgroundColor: opt.color,
+                        color: '#090d16',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '0.8rem',
+                        fontWeight: '900'
+                      }}
+                    >
+                      {opt.code}
+                    </span>
+                    {opt.name}
+                  </button>
+                )
+              })}
+            </div>
+
+            {isAnswered && (
+              <div
+                style={{
+                  backgroundColor: userAnswer === currentQuestion.correctPillar ? 'rgba(52, 211, 153, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                  borderLeft: `4px solid ${userAnswer === currentQuestion.correctPillar ? '#34d399' : '#ef4444'}`,
+                  borderRadius: '0 8px 8px 0',
+                  padding: '12px 16px',
+                  marginBottom: '16px',
+                  fontSize: '0.9rem',
+                  lineHeight: '1.5',
+                  color: '#e2e8f0'
+                }}
+              >
+                <div style={{ fontWeight: '700', marginBottom: '4px', color: userAnswer === currentQuestion.correctPillar ? '#34d399' : '#f87171' }}>
+                  {userAnswer === currentQuestion.correctPillar ? '✓ ¡Respuesta Correcta!' : '✗ Respuesta Incorrecta'}
+                </div>
+                {currentQuestion.explanation}
+              </div>
+            )}
+
+            {isAnswered && (
+              <button
+                type="button"
+                onClick={handleNextQuestion}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  borderRadius: '10px',
+                  backgroundColor: '#38bdf8',
+                  color: '#090d16',
+                  fontWeight: '700',
+                  fontSize: '0.92rem',
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'opacity 0.2s ease'
+                }}
+              >
+                {quizIndex + 1 === QUIZ_QUESTIONS.length ? 'Ver Resultados Finales' : 'Siguiente Caso →'}
+              </button>
+            )}
+          </div>
+        ) : (
+          <div
+            style={{
+              backgroundColor: '#131e32',
+              border: '1px solid #22324e',
+              borderRadius: '14px',
+              padding: '28px',
+              textAlign: 'center'
+            }}
+          >
+            <div style={{ fontSize: '2.5rem', marginBottom: '10px' }}>
+              {score >= 4 ? '🏆' : score >= 2 ? '⚡' : '📚'}
+            </div>
+            <h3 style={{ margin: '0 0 8px 0', fontSize: '1.3rem', color: '#f8fafc' }}>
+              Entrenamiento Finalizado
+            </h3>
+            <p style={{ margin: '0 0 18px 0', color: '#94a3b8', fontSize: '0.95rem' }}>
+              Acertaste <strong>{score} de {QUIZ_QUESTIONS.length}</strong> incidentes analizados.
+              {score === QUIZ_QUESTIONS.length && ' ¡Clasificación impecable de la tríada CIA!'}
+            </p>
+            <button
+              type="button"
+              onClick={handleRestartQuiz}
+              style={{
+                padding: '10px 24px',
+                borderRadius: '8px',
+                backgroundColor: '#38bdf8',
+                color: '#090d16',
+                fontWeight: '700',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '0.9rem'
+              }}
+            >
+              Reiniciar Simulador
+            </button>
+          </div>
+        )}
+      </section>
+
+      {/* Simulador de Casos Prácticos */}
       <section
         style={{
           backgroundColor: '#0f172a',
@@ -194,15 +480,14 @@ export default function App() {
           <span style={{ fontSize: '1.25rem' }}>🧪</span>
           <div>
             <h2 style={{ margin: 0, fontSize: '1.15rem', fontWeight: '700', color: '#f8fafc' }}>
-              Simulador de Casos Reales: ¿Qué pilar se rompió?
+              Casos Reales con Solución Técnica
             </h2>
             <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: '#94a3b8' }}>
-              Evalúa diferentes escenarios comunes y analiza el control técnico requerido.
+              Selecciona un escenario común para revisar los controles defensivos sugeridos.
             </p>
           </div>
         </div>
 
-        {/* Botones de selección de escenarios */}
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '18px' }}>
           {SCENARIOS.map((sc) => {
             const isCurrent = activeScenarioId === sc.id
@@ -228,7 +513,6 @@ export default function App() {
           })}
         </div>
 
-        {/* Tarjeta del caso seleccionado */}
         <div
           style={{
             backgroundColor: '#131e32',
@@ -272,7 +556,7 @@ export default function App() {
         </div>
       </section>
 
-      {/* SECCIÓN NUEVA: Propiedades complementarias */}
+      {/* Propiedades complementarias */}
       <section
         style={{
           backgroundColor: '#0f172a',
