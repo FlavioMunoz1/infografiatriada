@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { TRIAD_DATA } from './data/triadData'
 import TriadDetailCard from './components/TriadDetailCard'
 import RansomwareAlert from './components/RansomwareAlert'
-
+import GTA6Section from './components/GTA6Section'
 // Casos prácticos para poner a prueba el entendimiento
 const SCENARIOS = [
   {
